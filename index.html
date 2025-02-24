@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RCB-3 Bottle Deposit System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f5f5;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            color: #004a8d;
+            margin-bottom: 10px;
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        button {
+            background: #004a8d;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #003366;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>RCB-3 Bottle Deposit System</h2>
+        
+        <div id="id-section">
+            <h3>Enter Your ID</h3>
+            <input type="text" id="userID" placeholder="Scan or Enter ID">
+            <button onclick="validateID()">Submit</button>
+        </div>
+
+        <div id="menu-section" class="hidden">
+            <h3>Choose Action</h3>
+            <button onclick="showBalance()">Check Balance</button>
+            <button onclick="showSection('deposit')">Deposit Bottles</button>
+            <button onclick="showSection('withdraw')">Withdraw</button>
+        </div>
+
+        <div id="deposit-section" class="hidden">
+            <h3>Deposit Bottles</h3>
+            <input type="number" id="bottleCount" placeholder="Enter number of bottles">
+            <button onclick="depositBottles()">Confirm Deposit</button>
+        </div>
+
+        <div id="withdraw-section" class="hidden">
+            <h3>Withdraw Balance</h3>
+            <input type="number" id="withdrawAmount" placeholder="Enter amount">
+            <button onclick="withdraw()">Confirm Withdrawal</button>
+            <p id="error-message" style="color: red;"></p>
+        </div>
+
+        <div id="balance-section" class="hidden">
+            <h3>Current Balance</h3>
+            <p id="balance-display">₱0.00</p>
+        </div>
+    </div>
+
+    <script>
+        let currentUserID = "";
+        let userBalance = 0;
+
+        function validateID() {
+            let id = document.getElementById("userID").value.trim().toLowerCase();
+            if (id === "lccp") {
+                currentUserID = id;
+                document.getElementById("id-section").classList.add("hidden");
+                document.getElementById("menu-section").classList.remove("hidden");
+                fetchBalance();
+            } else {
+                alert("Invalid ID. Please try again.");
+            }
+        }
+
+        function fetchBalance() {
+            let storedBalance = localStorage.getItem(`balance_${currentUserID}`);
+            userBalance = storedBalance ? parseFloat(storedBalance) : 0;
+            document.getElementById("balance-display").textContent = `₱${userBalance.toFixed(2)}`;
+        }
+
+        function showSection(section) {
+            document.querySelectorAll(".hidden").forEach(el => el.classList.add("hidden"));
+            document.getElementById(`${section}-section`).classList.remove("hidden");
+        }
+
+        function depositBottles() {
+            let bottleCount = parseInt(document.getElementById("bottleCount").value);
+            if (bottleCount > 0) {
+                userBalance += bottleCount * 1;
+                localStorage.setItem(`balance_${currentUserID}`, userBalance);
+                alert(`Successfully deposited ${bottleCount} bottles. New balance: ₱${userBalance.toFixed(2)}`);
+                showSection("menu");
+            } else {
+                alert("Enter a valid bottle count.");
+            }
+        }
+
+        function withdraw() {
+            let withdrawAmount = parseFloat(document.getElementById("withdrawAmount").value);
+            if (withdrawAmount > userBalance) {
+                document.getElementById("error-message").textContent = "Insufficient Balance!";
+            } else {
+                userBalance -= withdrawAmount;
+                localStorage.setItem(`balance_${currentUserID}`, userBalance);
+                alert(`Successfully withdrawn ₱${withdrawAmount.toFixed(2)}. New balance: ₱${userBalance.toFixed(2)}`);
+                showSection("menu");
+            }
+        }
+
+        function showBalance() {
+            document.getElementById("balance-display").textContent = `₱${userBalance.toFixed(2)}`;
+            showSection("balance");
+        }
+    </script>
+</body>
+</html>
